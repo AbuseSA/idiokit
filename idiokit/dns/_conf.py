@@ -2,8 +2,16 @@ from __future__ import absolute_import
 
 from ._iputils import parse_ip
 
+if False:
+    # mypy ignores the "if False" and imports happily
+    from typing import Any, Dict, Iterator, Iterable, Tuple, TypeVar  # noqa
+    # FrozenSet still missing, see https://github.com/python/mypy/issues/1283
+    from typing import FrozenSet  # noqa
+    T = TypeVar('T')
+
 
 def parse_server(server):
+    # type: (str) -> Tuple[int, str, int]
     """
     >>> import socket
     >>> parse_server("192.0.2.0") == (socket.AF_INET, "192.0.2.0", 53)
@@ -17,6 +25,7 @@ def parse_server(server):
 
 
 def read_resolv_conf(line_iterator):
+    # type: (Iterator[str]) -> Iterator[Tuple[str, str]]
     for line in line_iterator:
         line = line.strip()
         if not line or line.startswith("#") or line.startswith(";"):
@@ -31,6 +40,7 @@ def read_resolv_conf(line_iterator):
 
 
 def read_hosts(line_iterator):
+    # type: (Iterator[str]) -> Iterator[Tuple[str, List[str]]]
     for line in line_iterator:
         comment_start = line.find("#")
         if comment_start >= 0:
@@ -65,14 +75,14 @@ def uniques(values):
 class Hosts(object):
     @classmethod
     def from_lines(cls, line_iterator):
-        ips = {}
+        ips = {}  # type: Dict[str, Set[str]]
         for ip, names in read_hosts(line_iterator):
             ips.setdefault(ip, set()).update(names)
         return cls(ips)
 
     def __init__(self, ips):
-        self._ips = {}
-        self._names = {}
+        self._ips = {}  # type: Dict[str, FrozenSet[str]]
+        self._names = {}  # type: Dict[str, Set[str]]
 
         for ip, names in ips.iteritems():
             self._ips[ip] = frozenset(names)
@@ -81,18 +91,22 @@ class Hosts(object):
                 self._names.setdefault(name, set()).add(ip)
 
     def ip_to_names(self, ip):
+        # type: (str) -> Iterator[str]
         _, ip = parse_ip(ip)
-        return iter(self._ips.get(ip, ()))
+        return iter(self._ips.get(ip, frozenset()))
 
     def name_to_ips(self, name):
-        return iter(self._names.get(name.lower(), ()))
+        # type: (str) -> Iterator[str]
+        return iter(self._names.get(name.lower(), set()))
 
     @property
     def ips(self):
+        # type: () -> Tuple[str, ...]
         return tuple(self._ips)
 
     @property
     def names(self):
+        # type: () -> Tuple[str, ...]
         return tuple(self._names)
 
 
@@ -118,6 +132,7 @@ class ResolvConf(object):
 
     @property
     def servers(self):
+        # type: () -> Tuple[str]
         return self._servers
 
 
@@ -126,9 +141,10 @@ class _Loader(object):
         self._path = path
         self._type = type
 
-        self._instance = None
+        self._instance = None  # type: Iterator[str]
 
     def load(self, force_reload=False):
+        # type: (bool) -> Iterator[str]
         if self._instance is None:
             opened = None
             try:

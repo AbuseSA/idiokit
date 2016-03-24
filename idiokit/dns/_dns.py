@@ -21,11 +21,16 @@ from .. import idiokit, socket, timer
 from ._iputils import parse_ip, reverse_ipv4, reverse_ipv6
 from ._conf import resolv_conf
 
+if False:
+    # mypy ignores the "if False" and imports happily
+    from typing import Dict, Iterator, List, Tuple  # noqa
+
 
 system_random = random.SystemRandom()
 
 
 def gen_id():
+    # type: () -> int
     return system_random.randint(0, 65535)
 
 
@@ -43,6 +48,7 @@ class _ReprMixin(object):
     """
 
     def __repr__(self):
+        # type: () -> str
         keys = []
         for key, value in inspect.getmembers(type(self)):
             if not isinstance(value, property):
@@ -125,10 +131,12 @@ class ResponseError(DNSError):
 
     @property
     def rcode(self):
+        # type: () -> int
         return self._rcode
 
     @property
     def string(self):
+        # type: () -> str
         return self._string
 
 
@@ -203,53 +211,66 @@ class Message(_ReprMixin):
 
     @property
     def id(self):
+        # type: () -> int
         return self._id
 
     @property
     def query(self):
+        # type: () -> bool
         return self._query
 
     @property
     def opcode(self):
+        # type: () -> int
         return self._opcode
 
     @property
     def authoritative_answer(self):
+        # type: () -> bool
         return self._authoritative_answer
 
     @property
     def truncated(self):
+        # type: () -> bool
         return self._truncated
 
     @property
     def recursion_desired(self):
+        # type: () -> bool
         return self._recursion_desired
 
     @property
     def recursion_available(self):
+        # type: () -> bool
         return self._recursion_available
 
     @property
     def rcode(self):
+        # type: () -> str
         return self._rcode
 
     @property
     def questions(self):
+        # type () -> List[str]
         return self._questions
 
     @property
     def answers(self):
+        # type () -> List[str]
         return self._answers
 
     @property
     def authorities(self):
+        # type () -> List[str]
         return self._authorities
 
     @property
     def additional(self):
+        # type () -> List[str]
         return self._additional
 
     def pack(self):
+        # type: () -> str
         flags = 0
         flags |= 0 if self._query else FLAGS_QR
         flags |= FLAGS_AA if self._authoritative_answer else 0
@@ -294,6 +315,7 @@ class Question(_ReprMixin):
 
     @property
     def name(self):
+        # type -> () -> str
         return self._name
 
     @property
@@ -310,7 +332,7 @@ class Question(_ReprMixin):
 
 class RR(_ReprMixin):
     _struct = struct.Struct("!HHiH")
-    _types = {}
+    _types = {}  # type: Dict[str, str]
 
     @classmethod
     def register_type(cls, type, code=None):
@@ -590,21 +612,26 @@ class SRV(_ReprMixin):
 
     @property
     def priority(self):
+        # type: () -> int
         return self._priority
 
     @property
     def weight(self):
+        # type: () -> int
         return self._weight
 
     @property
     def port(self):
+        # type: () -> int
         return self._port
 
     @property
     def target(self):
+        # type: () -> str
         return self._target
 
     def pack(self):
+        # type: () -> str
         return self._struct.pack(self._priority, self._weight, self._port) + pack_name(self._target)
 RR.register_type(SRV)
 
@@ -639,13 +666,16 @@ class MX(_ReprMixin):
 
     @property
     def preference(self):
+        # type: () -> int
         return self._preference
 
     @property
     def exchange(self):
+        # type: () -> str
         return self._exchange
 
     def pack(self):
+        # type: () -> str
         return self._struct.pack(self._preference) + pack_name(self._exchange)
 RR.register_type(MX)
 
@@ -736,8 +766,9 @@ def unpack_name(data, offset=0, max_octet_count=255):
 
 
 def find_answers(msg, question):
+    # type: (Message, Question) -> Tuple[str, List[str]]
     cnames = {}
-    answers = {}
+    answers = {}  # type: Dict[str, List[str]]
     for answer in msg.answers:
         if answer.type == CNAME.code:
             cnames[answer.name] = answer.data.name
@@ -774,12 +805,13 @@ class Resolver(object):
         return server
 
     def __init__(self, servers=None):
+        # type: (List[Tuple[str,int]]) -> None
         if servers is None:
             servers = self._resolv_conf.load().servers
         else:
             servers = map(self._normalize_server, servers)
 
-        self._servers = []
+        self._servers = []  # type: List[Tuple[int, str, int]]
         self._timeout = 5.0
         self._tries = 3
         self._use_tcp = True
@@ -788,6 +820,7 @@ class Resolver(object):
             self.append_server(host, port)
 
     def append_server(self, ip, port=DNS_PORT):
+        # type: (str, int) -> None
         family, ip = parse_ip(ip)
         self._servers.append((family, ip, port))
 
@@ -950,6 +983,7 @@ def srv(name, resolver=None):
 
 
 def ordered_srv_records(srv_records):
+    # type: (Tuple[SRV, ...]) -> Iterator[SRV]
     """Implement server selection as described in RFC 2782.
 
     >>> srv1 = SRV(30, 256, 7, "target3")
@@ -970,7 +1004,7 @@ def ordered_srv_records(srv_records):
     if len(srv_records) == 1 and srv_records[0].target == "":
         return
 
-    priorities = dict()
+    priorities = dict()  # type: Dict[int, List[Tuple[int, SRV]]]
     for srv in srv_records:
         priorities.setdefault(srv.priority, []).append((srv.weight, srv))
 
