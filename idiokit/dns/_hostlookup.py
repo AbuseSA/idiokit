@@ -3,8 +3,13 @@ from ._iputils import parse_ip
 from ._conf import hosts
 from ._dns import DNSError, a, aaaa
 
+if False:
+    # mypy ignores the "if False" and imports happily
+    from typing import List, Tuple  # noqa
+
 
 def _filter_ips(potential_ips):
+    # type: (List[str]) -> List[Tuple[int, str]]
     results = []
     for ip in potential_ips:
         try:
@@ -32,7 +37,7 @@ class HostLookup(object):
 
         if not results:
             results = []
-            error = None
+            error = None  # type: DNSError
             try:
                 records = yield a(host, resolver)
             except DNSError as error:

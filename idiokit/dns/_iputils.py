@@ -2,8 +2,13 @@ from __future__ import absolute_import
 
 import socket
 
+if False:
+    # mypy ignores the "if False" and imports happily
+    from typing import Tuple  # noqa
+
 
 def parse_ip(ip):
+    # type: (str) -> Tuple[int, str]
     """
     >>> parse_ip("192.0.2.1") == (socket.AF_INET, "192.0.2.1")
     True
@@ -28,6 +33,7 @@ def parse_ip(ip):
 
 
 def reverse_ipv4(string):
+    # type: (str) -> str
     """
     >>> reverse_ipv4("192.0.2.1")
     '1.2.0.192'
@@ -52,6 +58,7 @@ def reverse_ipv4(string):
 
 
 def reverse_ipv6(string):
+    # type: (str) -> str
     """
     >>> reverse_ipv6("2001:db8::1234:5678")
     '8.7.6.5.4.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2'
