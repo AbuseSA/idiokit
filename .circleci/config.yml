@@ -1,0 +1,31 @@
+version: 2
+jobs:
+  test-2.7: &test-template
+    docker:
+      - image: circleci/python:2.7.15
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo pip install tox
+            sudo pip install -r requirements.txt
+            mkdir results
+      - run:
+          command: |
+            sudo tox -e flake8 idiokit
+      - run:
+          command: |
+            sudo tox -e py27 -- idiokit --junitxml=results/py27.xml
+      - store_test_results:
+          path: results
+      - store_artifacts:
+          path: results
+          destination: results
+  test-2.6:
+    <<: *test-template
+    docker:
+        image: circleci/python:2.6.9
+  test-2.6:
+    <<: *test-template
+    docker:
+        image: pypy:2-6.0
