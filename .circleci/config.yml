@@ -33,12 +33,12 @@ jobs:
   test-2.6:
     <<: *test-template
     docker:
-        image: circleci/python:2.6.9
+      - image: circleci/python:2.6.9
     environment:
       VER: py26
   test-pypy:
     <<: *test-template
     docker:
-        image: pypy:2-6.0
+      - image: pypy:2-6.0
     environment:
       VER: pypy
