@@ -10,10 +10,11 @@ jobs:
     docker:
       - image: circleci/python:2.7
     environment:
-      CIRCLE_REPOSITORY_URL: https://github.com/abusesa/idiokit
       TOX_VER: py27
     steps:
-      - checkout
+      - run:
+          command: |
+            git clone https://github.com/abusesa/idiokit
       - run:
           command: |
             sudo pip install tox
@@ -35,5 +36,4 @@ jobs:
     docker:
       - image: pypy:2-6.0
     environment:
-      CIRCLE_REPOSITORY_URL: https://github.com/abusesa/idiokit
       TOX_VER: pypy
