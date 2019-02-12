@@ -9,9 +9,9 @@ workflows:
 jobs:
   test-2.7: &test-template
     docker:
-      - image: circleci/python:2.7.15
+      - image: circleci/python:2.7
     environment:
-      VER: py27
+      TOX_VER: py27
     steps:
       - checkout
       - run:
@@ -24,18 +24,12 @@ jobs:
             sudo tox -e flake8 idiokit
       - run:
           command: |
-            sudo tox -e py27 -- idiokit --junitxml=results/$ENV.xml
+            sudo tox -e $TOX_VER -- idiokit --junitxml=results/$TOX_VER.xml
       - store_test_results:
           path: results
       - store_artifacts:
           path: results
           destination: results
-  test-2.6:
-    <<: *test-template
-    docker:
-      - image: circleci/python:2.6.9
-    environment:
-      VER: py26
   test-pypy:
     <<: *test-template
     docker:
