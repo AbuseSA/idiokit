@@ -4,13 +4,13 @@ workflows:
   test:
     jobs:
       - test-2.7
-      - test-2.6
       - test-pypy
 jobs:
   test-2.7: &test-template
     docker:
       - image: circleci/python:2.7
     environment:
+      CIRCLE_REPOSITORY_URL: https://github.com/abusesa/idiokit
       TOX_VER: py27
     steps:
       - checkout
@@ -35,4 +35,5 @@ jobs:
     docker:
       - image: pypy:2-6.0
     environment:
-      VER: pypy
+      CIRCLE_REPOSITORY_URL: https://github.com/abusesa/idiokit
+      TOX_VER: pypy
