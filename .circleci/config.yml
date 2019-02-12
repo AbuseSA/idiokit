@@ -17,8 +17,7 @@ jobs:
             git clone https://github.com/abusesa/idiokit
       - run:
           command: |
-            sudo pip install tox
-            sudo pip install -r requirements.txt
+            pip install tox
             mkdir results
       - run:
           command: |
